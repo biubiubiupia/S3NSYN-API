@@ -3,12 +3,14 @@
  * @returns { Promise<void> }
  */
 export const up = function (knex) {
-  return knex.schema.createTable("user", (table) => {
+  return knex.schema.createTable("users", (table) => {
     table.string("name").notNullable();
     table.string("email").unique().notNullable();
     table.string("password").notNullable();
-    table.timestamp("created_at").defaultTo(knex.fn.now())
-    table.timestamp('updated_at').defaultTo(knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table
+      .timestamp("updated_at")
+      .defaultTo(knex.raw("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"));
   });
 };
 
