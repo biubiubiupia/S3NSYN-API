@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 export const up = function (knex) {
-  return knex.schema.createTable("rewards", (table) => {
+  return knex.schema.createTable("goals", (table) => {
     table.increments("id").primary();
     table.string("title").notNullable();
     table.text("description");
@@ -13,7 +13,7 @@ export const up = function (knex) {
       .integer("user_id")
       .unsigned()
       .references("id")
-      .inTable("user")
+      .inTable("users")
       .onUpdate("CASCADE")
       .onDelete("CASCADE");
     table.timestamp("created_at").defaultTo(knex.fn.now());
