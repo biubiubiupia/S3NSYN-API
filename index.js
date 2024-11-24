@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
     res.send("Welcome to S3NSYN!");
 });
 
-// app.use("/auth", authRoutes);
+app.use("/", authRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running at ${BACKEND_URL}:${PORT}`);
