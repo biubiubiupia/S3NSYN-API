@@ -7,6 +7,10 @@ import bcrypt from "bcryptjs";
 const createAccount = async (req, res) => {
   const { name, email, password } = req.body;
 
+  if (!name || !email || !password) {
+    return res.status(400).send("Request body needs name, email, and password");
+  }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!emailRegex.test(email)) {
@@ -17,7 +21,16 @@ const createAccount = async (req, res) => {
 
   try {
     await knex("users").insert({ name, email, password: encrypted });
-    res.status(201).send("Account created successfully");
+
+    const user = await knex("users").where({ email }).first();
+
+    if (!user) {
+      return res.status(500).send("User not found after insertion");
+    }
+
+    const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET);
+
+    res.status(201).json({ token, message: "Account created successfully" });
   } catch (e) {
     switch (e.code) {
       case "ER_DUP_ENTRY":
