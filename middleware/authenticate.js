@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
-const { JWT_SECRET } = process.env;
+const { TOKEN_SECRET } = process.env;
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1]; 
 
     if (!token) {
@@ -9,8 +9,9 @@ const authenticate = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, TOKEN_SECRET);
         req.user = decoded; 
+        next();
     } catch (error) {
         return res.status(401).json({ error: 'Token is not valid' });
     }
