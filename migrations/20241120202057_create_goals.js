@@ -7,8 +7,8 @@ export const up = function (knex) {
     table.increments("id").primary();
     table.string("title").notNullable();
     table.text("description");
-    table.timestamp("start-time").defaultTo(knex.fn.now());
-    table.timestamp("end-time");
+    table.bigint("start_time");
+    table.bigint("end_time");
     table
       .integer("user_id")
       .unsigned()

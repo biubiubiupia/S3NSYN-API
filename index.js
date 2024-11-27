@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth-routes.js";
 import goalsRoutes from "./routes/goals-routes.js";
+import rewardRoutes from "./routes/rewards-routes.js";
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.get("/", (req, res) => {
 
 app.use("/", authRoutes);
 app.use("/goals", goalsRoutes);
-
+app.use("/rewards", rewardRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running at ${BACKEND_URL}:${PORT}`);

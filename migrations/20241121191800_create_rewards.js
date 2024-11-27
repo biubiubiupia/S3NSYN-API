@@ -8,8 +8,7 @@ export const up = function (knex) {
     table.string("title").notNullable();
     table.text("description");
     table.integer("points").notNullable();
-    table.timestamp("start-time").defaultTo(knex.fn.now());
-    table.timestamp("end-time");
+    table.bigint("start_time")
     table
       .integer("goal_id")
       .unsigned()
