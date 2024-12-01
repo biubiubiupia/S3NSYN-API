@@ -33,7 +33,10 @@ const addGoal = async (req, res) => {
     if (!title || typeof title !== "string" || !start_time || !end_time) {
       return res
         .status(400)
-        .json({ message: "Invalid input: title, start_time, and end_time are required" });
+        .json({
+          message:
+            "Invalid input: title, start_time, and end_time are required",
+        });
     }
 
     const userId = req.user.id;
@@ -56,28 +59,49 @@ const addGoal = async (req, res) => {
 };
 
 const editGoal = async (req, res) => {
+  const { goalId } = req.params;
+
+  console.log(goalId);
+
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body is empty. Please provide valid data.",
+    });
+  }
+
+  const { title, description, start_time, end_time } = req.body;
+
+  if (!title || !description || !start_time || !end_time) {
+    return res.status(400).json({
+      message: "Please include goal title, description, start_time and end_time in request body.",
+    });
+  }
+
   try {
+    console.log("Updating goal with ID:", goalId);
+    console.log("Request Body:", req.body);
+
     const goalUpdated = await knex("goals")
-      .where({ id: req.params.id })
-      .update(req.body);
+      .where({ id: goalId })
+      .update(req.body)
 
     if (goalUpdated === 0) {
       return res.status(404).json({
-        message: `Goal with ID ${req.params.id} not found`,
+        message: `Goal with ID ${id} not found`,
       });
     }
 
-    const updatedGoal = await knex("goals").where({
-      id: req.params.id,
-    });
+    const updatedGoal = await knex("goals").where({ id: goalId }).first();
 
-    res.status(200).json(updatedGoal[0]);
+    res.status(200).json(updatedGoal);
   } catch (error) {
+    console.error(`Error updating goal with ID ${goalId}:`, error);
     res.status(500).json({
-      message: `Unable to update goal with ID ${req.params.id}: ${error}`,
+      message: `Unable to update goal with ID ${goalId}: ${error.message}`,
     });
   }
 };
+
 
 const deleteGoal = async (req, res) => {
   const { goalId } = req.params;

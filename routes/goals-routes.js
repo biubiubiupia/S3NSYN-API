@@ -10,7 +10,7 @@ router.route("/:goalId").get(authenticate, goalController.getOneGoal);
 
 router.route("/").post(authenticate, goalController.addGoal);
 
-router.route("/").put(authenticate, goalController.editGoal);
+router.route("/:goalId").put(authenticate, goalController.editGoal);
 
 router.route("/:goalId").delete(authenticate, goalController.deleteGoal);
 
