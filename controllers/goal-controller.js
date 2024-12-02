@@ -61,8 +61,6 @@ const addGoal = async (req, res) => {
 const editGoal = async (req, res) => {
   const { goalId } = req.params;
 
-  console.log(goalId);
-
   if (!req.body) {
     return res.status(400).json({
       message: "Request body is empty. Please provide valid data.",
@@ -78,9 +76,6 @@ const editGoal = async (req, res) => {
   }
 
   try {
-    console.log("Updating goal with ID:", goalId);
-    console.log("Request Body:", req.body);
-
     const goalUpdated = await knex("goals")
       .where({ id: goalId })
       .update(req.body)
