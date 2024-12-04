@@ -6,15 +6,16 @@ const addHabit = async (req, res) => {
   const {
     title,
     frequency,
+    count,     
     selectedDays,
-    dates,
+    selectedDates,
     times,
-    weekly_days,
-    monthly_dates,
+    goal_id,
   } = req.body;
   const user_id = req.user.id;
-  console.log(req.user.id)
   const alert_times = JSON.stringify(times);
+  const weekly_days= selectedDays.length? JSON.stringify(selectedDays): null;
+  const monthly_dates= selectedDates.length? JSON.stringify(selectedDates): null;
 
   if (!title || !frequency) {
     return res.status(400).json({
@@ -27,7 +28,10 @@ const addHabit = async (req, res) => {
       user_id,
       title,
       frequency,
+      weekly_days,
+      monthly_dates,
       alert_times,
+      goal_id
     });
     res.status(201).json({ message: "Habit saved successfully!" });
   } catch (error) {
@@ -36,33 +40,16 @@ const addHabit = async (req, res) => {
   }
 };
 
-const addGoal = async (req, res) => {
+const getHabits = async (req, res) => {
+  const goalId = req.params.goalId;
+
   try {
-    const { title, description, start_time, end_time } = req.body;
-
-    if (!title || typeof title !== "string" || !start_time || !end_time) {
-      return res.status(400).json({
-        message: "Invalid input: title, start_time, and end_time are required",
-      });
-    }
-
-    const userId = req.user.id;
-
-    const [insertedId] = await knex("goals").insert({
-      title,
-      description,
-      start_time,
-      end_time,
-      user_id: userId,
-    });
-
-    res
-      .status(201)
-      .json({ id: insertedId, message: "Goal created successfully" });
+    const habits = await knex("habits").where({ goal_id: goalId });
+    res.status(200).json(habits);
   } catch (error) {
-    console.error("Error creating goal:", error);
-    res.status(500).json({ message: "Error creating goal" });
+    console.error(error);
+    res.status(500).json({ error: `Failed to fetch habits for goal with ID ${goalId}` });
   }
-};
+}
 
-export { addHabit };
+export { addHabit, getHabits };
