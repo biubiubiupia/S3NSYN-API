@@ -10,6 +10,13 @@ export const up = function (knex) {
     table.integer("points").notNullable();
     table.bigint("start_time")
     table
+      .integer("user_id")
+      .unsigned()
+      .references("id")
+      .inTable("users")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
+    table
       .integer("goal_id")
       .unsigned()
       .references("id")

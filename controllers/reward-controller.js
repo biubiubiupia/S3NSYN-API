@@ -5,9 +5,6 @@ import jwt from "jsonwebtoken";
 import authenticate from "../middleware/authenticate.js";
 
 const setReward = async (req, res) => {
-
-  const userId = req.userId;
-
   try {
     const { title, description, goal_id } = req.body;
     if (!title || !goal_id) {
@@ -16,13 +13,18 @@ const setReward = async (req, res) => {
         .json({ message: "Invalid input: reward title and id are required" });
     }
 
-    const goal = await knex("goals").where("id", goal_id).first(); 
+    const goal = await knex("goals").where("id", goal_id).first();
+
+    if (!goal) {
+      return res.status(404).json({ message: "Goal not found" });
+    }
 
     const [insertedId] = await knex("rewards").insert({
       title,
       description,
       points: 1000,
       start_time: goal.start_time,
+      goal_id,
     });
 
     res
@@ -33,10 +35,10 @@ const setReward = async (req, res) => {
   }
 };
 
-const getReward = async (req, res) => {
-  const {id} = req.params;
+const getOneReward = async (req, res) => {
+  const { goalId } = req.params;
 
-  const reward = await knex("rewards").where("id", id).first();
+  const reward = await knex("rewards").where("goal_id", goalId).first();
 
   if (!reward) {
     return res.status(404).json({
@@ -44,8 +46,22 @@ const getReward = async (req, res) => {
     });
   }
 
-  res.status(200).json(goal);
-}
+  res.status(200).json(reward);
+};
+
+const getRewards = async (req, res) => {
+  const { goalId } = req.params;
+
+  const reward = await knex("rewards").where("goal_id", goalId).first();
+
+  if (!reward) {
+    return res.status(404).json({
+      message: `Reward with ID ${id} does not exist.`,
+    });
+  }
+
+  res.status(200).json(reward);
+};
 
 const deleteReward = async (req, res) => {
   const { id } = req.params;
@@ -69,4 +85,4 @@ const deleteReward = async (req, res) => {
   }
 };
 
-export { setReward, getReward, deleteReward };
+export { setReward, getOneReward, getRewards, deleteReward };

@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.route("/").post(authenticate, rewardController.setReward);
 
-router.route("/:rewardId").get(authenticate, rewardController.getReward);
+router.route("/:goalId").get(authenticate, rewardController.getOneReward);
 
 router.route("/:rewardId").delete(authenticate, rewardController.deleteReward);
 
