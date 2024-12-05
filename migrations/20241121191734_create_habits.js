@@ -17,6 +17,7 @@ export const up = function (knex) {
     table
       .integer("user_id")
       .unsigned()
+      .notNullable()
       .references("id")
       .inTable("users")
       .onUpdate("CASCADE")
@@ -24,6 +25,7 @@ export const up = function (knex) {
     table
       .integer("goal_id")
       .unsigned()
+      .notNullable()
       .references("id")
       .inTable("goals")
       .onUpdate("CASCADE")

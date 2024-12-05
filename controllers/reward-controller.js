@@ -24,7 +24,7 @@ const setReward = async (req, res) => {
     const [insertedId] = await knex("rewards").insert({
       title,
       description,
-      points: 0,
+      points: 1000,
       start_time: goal.start_time,
       goal_id,
       user_id: userId,

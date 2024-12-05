@@ -6,11 +6,13 @@ const router = express.Router();
 
 router.route("/").post(authenticate, habitController.addHabit);
 
+router.route("/today").get(authenticate, habitController.getTodayHabits)
+
 router.route("/:goalId").get(authenticate, habitController.getHabits);
 
 router.route("/habit/:habitId").get(authenticate, habitController.getOneHabit);
 
-router.route("/:habitId").put(authenticate, habitController.editHabit);
+router.route("/habit/:habitId").put(authenticate, habitController.editHabit);
 
 
 export default router;
