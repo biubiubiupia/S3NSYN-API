@@ -9,6 +9,7 @@ export const up = function (knex) {
     table.text("note");
     table.integer("reward_points");
     table.timestamp("start-time").defaultTo(knex.fn.now());
+    table.integer("count").notNullable();
     table.string("frequency", ["daily", "weekly", "monthly"]).notNullable();
     table.integer("daily_occurances");
     table.integer("weekly_occurances");
