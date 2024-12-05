@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import authenticate from "../middleware/authenticate.js";
 
 const setReward = async (req, res) => {
+  const userId = req.user.id;
+
   try {
     const { title, description, goal_id } = req.body;
     if (!title || !goal_id) {
@@ -22,9 +24,10 @@ const setReward = async (req, res) => {
     const [insertedId] = await knex("rewards").insert({
       title,
       description,
-      points: 1000,
+      points: 0,
       start_time: goal.start_time,
       goal_id,
+      user_id: userId,
     });
 
     res
@@ -42,47 +45,64 @@ const getOneReward = async (req, res) => {
 
   if (!reward) {
     return res.status(404).json({
-      message: `Reward with ID ${id} does not exist.`,
+      message: `There are no rewards found for goal with ID ${goalId}`,
     });
   }
 
   res.status(200).json(reward);
 };
 
-const getRewards = async (req, res) => {
-  const { goalId } = req.params;
+const getAllRewards = async (req, res) => {
+  const userId = req.user.id;
 
-  const reward = await knex("rewards").where("goal_id", goalId).first();
+  const rewards = await knex("rewards").where("user_id", userId);
 
-  if (!reward) {
+  if (!rewards) {
     return res.status(404).json({
-      message: `Reward with ID ${id} does not exist.`,
+      message: `There are no rewards found for user with ID ${userId}.`,
     });
   }
 
-  res.status(200).json(reward);
+  res.status(200).json(rewards);
 };
 
-const deleteReward = async (req, res) => {
-  const { id } = req.params;
+const editReward = async (req, res) => {
+  const { rewardId } = req.params;
+
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body is empty. Please provide valid data.",
+    });
+  }
+
+  const { title, description } = req.body;
+
+  if (!title || !description) {
+    return res.status(400).json({
+      message: "Please include goal title and description in request body.",
+    });
+  }
 
   try {
-    const reward = await knex("rewards").where("id", id).first();
+    const rewardUpdated = await knex("rewards")
+      .where({ id: rewardId })
+      .update(req.body)
 
-    if (!reward) {
+    if (rewardUpdated === 0) {
       return res.status(404).json({
-        message: `Reward with ID ${id} does not exist.`,
+        message: `Reward with ID ${id} not found`,
       });
     }
 
-    await knex("rewards").where("id", id).del();
+    const updatedReward = await knex("goals").where({ id: rewardId }).first();
 
-    res.status(204).send("Reward deleted successfully!");
+    res.status(200).json(updatedReward);
   } catch (error) {
+    console.error(`Error updating reward with ID ${rewardId}:`, error);
     res.status(500).json({
-      message: `Unable to delete reward with ID ${id}: ${error}`,
+      message: `Unable to update reward with ID ${rewardId}: ${error.message}`,
     });
   }
 };
 
-export { setReward, getOneReward, getRewards, deleteReward };
+export { setReward, getOneReward, getAllRewards, editReward };

@@ -52,4 +52,20 @@ const getHabits = async (req, res) => {
   }
 }
 
-export { addHabit, getHabits };
+const getOneHabit = async (req, res) => {
+  const habitId = req.params.habitId;
+
+  try {
+    const habit = await knex("habits").where({ id: habitId }).first();
+    res.status(200).json(habit);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: `Failed to fetch habit with ID ${habitId}` });
+  }
+}
+
+const editHabit = async (req, res) => {
+  const habitId = req.params.habitId;
+}
+
+export { addHabit, getHabits, getOneHabit, editHabit };
