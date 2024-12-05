@@ -27,6 +27,7 @@ const addHabit = async (req, res) => {
     await knex("habits").insert({
       user_id,
       title,
+      count,
       frequency,
       weekly_days,
       monthly_dates,

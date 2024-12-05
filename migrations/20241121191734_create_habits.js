@@ -11,9 +11,6 @@ export const up = function (knex) {
     table.timestamp("start-time").defaultTo(knex.fn.now());
     table.integer("count").notNullable();
     table.string("frequency", ["daily", "weekly", "monthly"]).notNullable();
-    table.integer("daily_occurances");
-    table.integer("weekly_occurances");
-    table.integer("montly_occurances");
     table.json("alert_times").notNullable();
     table.json("weekly_days");
     table.json("monthly_dates");
