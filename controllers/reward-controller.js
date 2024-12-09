@@ -1,8 +1,6 @@
 import initKnex from "knex";
 import configuration from "../knexfile.js";
 const knex = initKnex(configuration);
-import jwt from "jsonwebtoken";
-import authenticate from "../middleware/authenticate.js";
 
 const setReward = async (req, res) => {
   const userId = req.user.id;

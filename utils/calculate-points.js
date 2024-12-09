@@ -1,3 +1,7 @@
+import initKnex from "knex";
+import configuration from "../knexfile.js";
+const knex = initKnex(configuration);
+
 const allOccur = async (goal_id, goalStartTime, goalEndTime) => {
   const habits = await knex("habits").where("goal_id", goal_id);
 
