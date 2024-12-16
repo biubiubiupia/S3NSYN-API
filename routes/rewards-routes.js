@@ -12,4 +12,6 @@ router.route("/").get(authenticate, rewardController.getAllRewards);
 
 router.route("/:rewardId").put(authenticate, rewardController.editReward);
 
+router.route("/:habitId/update").put(authenticate, rewardController.changePoints);
+
 export default router;
