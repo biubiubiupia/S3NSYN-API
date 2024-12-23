@@ -24,6 +24,7 @@ const setReward = async (req, res) => {
       description,
       points: 1000,
       start_time: goal.start_time,
+      end_time: goal.end_time,
       goal_id,
       user_id: userId,
     });

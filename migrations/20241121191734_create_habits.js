@@ -7,7 +7,6 @@ export const up = function (knex) {
     table.increments("id").primary();
     table.string("title").notNullable();
     table.text("note");
-    // table.integer("reward_points"); remove because reward points are calculated in rewards
     table.timestamp("start-time").defaultTo(knex.fn.now());
     table.integer("count").notNullable();
     table.string("frequency", ["daily", "weekly", "monthly"]).notNullable();
