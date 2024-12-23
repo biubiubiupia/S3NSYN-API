@@ -3,7 +3,7 @@ import configuration from "../knexfile.js";
 import { allOccur, updatePoints } from "../utils/calculate-points.js";
 const knex = initKnex(configuration);
 
-// Fetch Goal End Time
+// Fetch Goal End Timeç
 const getEndTime = async (goal_id) => {
   const goal = await knex("goals").where("id", goal_id).first();
   if (!goal) throw new Error("Goal not found");
@@ -46,7 +46,9 @@ const addHabit = async (req, res) => {
     });
 
     // Fetch all habits and calculate total occurrences
-    const { totalOccur } = await allOccur(goal_id, goalStartTime, goalEndTime);
+    const totalOccur = await allOccur(goal_id, goalStartTime, goalEndTime);
+
+    console.log(totalOccur);
 
     // Update reward points in the rewards table
     await updatePoints(goal_id, totalOccur);
@@ -73,7 +75,9 @@ const editHabit = async (req, res) => {
   try {
     const habitExists = await knex("habits").where({ id: habitId }).first();
     if (!habitExists) {
-      return res.status(404).json({ error: "Habit not found." });
+      return res
+        .status(404)
+        .json({ error: `Habit with ${habitId} not found.` });
     }
 
     // Update the habit first
@@ -100,8 +104,6 @@ const editHabit = async (req, res) => {
       goalEndTime
     );
 
-    console.log(totalOccur);
-
     // Update reward points in the rewards table
     await updatePoints(habitExists.goal_id, totalOccur);
 
@@ -121,6 +123,16 @@ const editHabit = async (req, res) => {
 const getTodayHabits = async (req, res) => {
   const userId = req.user.id; // Assumes user is authenticated and `req.user` is set
 
+  const convertDays = {
+    Mon: "Monday",
+    Tue: "Tuesday",
+    Wed: "Wednesday",
+    Thu: "Thursday",
+    Fri: "Friday",
+    Sat: "Saturday",
+    Sun: "Sunday",
+  };
+
   const filterTodayHabits = (habits) => {
     const today = new Date();
     const todayDate = today.getDate();
@@ -134,12 +146,16 @@ const getTodayHabits = async (req, res) => {
 
     return habits.filter((habit) => {
       if (habit.frequency === "daily") {
-        return true; // Daily habits always occur
+        return true;
       }
 
       if (habit.frequency === "weekly") {
-        const weeklyDays = habit.weekly_days;
-        return weeklyDays.includes(todayDayIndex); // Check if today is in the habit's weekly_days
+        const weeklyDays = habit.weekly_days.map(
+          (day) => convertDays[day] || day
+        );
+        return weeklyDays.includes(
+          today.toLocaleString("en-US", { weekday: "long" })
+        ); // Check if today is in the habit's weekly_days
       }
 
       if (habit.frequency === "monthly") {
@@ -201,4 +217,41 @@ const getOneHabit = async (req, res) => {
   }
 };
 
-export { addHabit, getTodayHabits, getHabits, getOneHabit, editHabit };
+const deleteHabit = async (req, res) => {
+  const habitId = req.params.habitId;
+
+  try {
+    const habit = await knex("habits").where({ id: habitId }).first();
+
+    if (!habit) {
+      return res.status(404).json({
+        message: `Habit with ID ${habitId} does not exist.`,
+      });
+    }
+
+    const goalId = habit.goal_id;
+
+    await knex("habits").where("id", habitId).first().del();
+
+    //recalculate total habit occurrences for the corresponding goal/reward
+    const goalEndTime = await getEndTime(goalId);
+    const goalStartTime = new Date();
+    const totalOccur = await allOccur(goalId, goalStartTime, goalEndTime);
+    await updatePoints(goalId, totalOccur);
+
+    res.status(204).send("Habit deleted successfully!");
+  } catch (error) {
+    res.status(500).json({
+      message: `Unable to delete habit with ID ${habitId}: ${error}`,
+    });
+  }
+};
+
+export {
+  addHabit,
+  getTodayHabits,
+  getHabits,
+  getOneHabit,
+  editHabit,
+  deleteHabit,
+};

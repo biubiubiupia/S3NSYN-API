@@ -14,5 +14,6 @@ router.route("/habit/:habitId").get(authenticate, habitController.getOneHabit);
 
 router.route("/habit/:habitId").put(authenticate, habitController.editHabit);
 
+router.route("/:habitId").delete(authenticate, habitController.deleteHabit);
 
 export default router;
