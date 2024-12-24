@@ -121,7 +121,7 @@ const editHabit = async (req, res) => {
 };
 
 const getTodayHabits = async (req, res) => {
-  const userId = req.user.id; // Assumes user is authenticated and `req.user` is set
+  const userId = req.user.id; 
 
   const convertDays = {
     Mon: "Monday",

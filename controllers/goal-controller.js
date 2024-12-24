@@ -67,10 +67,12 @@ const editGoal = async (req, res) => {
 
   const { title, description, start_time, end_time } = req.body;
 
-  if (!title || !description || !start_time || !end_time) {
+  console.log(req.body);
+
+  if (!title || !start_time || !end_time) {
     return res.status(400).json({
       message:
-        "Please include goal title, description, start_time, and end_time in request body.",
+        "Please include goal title, start_time, and end_time in request body.",
     });
   }
 
@@ -95,10 +97,9 @@ const editGoal = async (req, res) => {
     const updatedGoal = { ...currentGoal, ...req.body }; // Assuming req.body contains updated fields
     // Proceed with reward recalculation only if `end_time` has changed
     if (isEndTimeUpdated) {
-      // Calculate total occurrences for all habits
-      const totalOccur = await allOccur(goalId, start_time, end_time);
+      await knex("rewards").where({ goal_id: goalId }).update({ end_time: end_time });
 
-      // Update points per occurrence in the rewards table
+      const totalOccur = await allOccur(goalId, start_time, end_time);
       await updatePoints(goalId, totalOccur);
     }
 
