@@ -3,7 +3,7 @@ import configuration from "../knexfile.js";
 import { allOccur, updatePoints } from "../utils/calculate-points.js";
 const knex = initKnex(configuration);
 
-// Fetch Goal End Timeç
+// Fetch Goal End Time
 const getEndTime = async (goal_id) => {
   const goal = await knex("goals").where("id", goal_id).first();
   if (!goal) throw new Error("Goal not found");
@@ -47,8 +47,6 @@ const addHabit = async (req, res) => {
 
     // Fetch all habits and calculate total occurrences
     const totalOccur = await allOccur(goal_id, goalStartTime, goalEndTime);
-
-    console.log(totalOccur);
 
     // Update reward points in the rewards table
     await updatePoints(goal_id, totalOccur);
@@ -121,7 +119,7 @@ const editHabit = async (req, res) => {
 };
 
 const getTodayHabits = async (req, res) => {
-  const userId = req.user.id; 
+  const userId = req.user.id;
 
   const convertDays = {
     Mon: "Monday",
@@ -133,49 +131,58 @@ const getTodayHabits = async (req, res) => {
     Sun: "Sunday",
   };
 
-  const filterTodayHabits = (habits) => {
-    const today = new Date();
-    const todayDate = today.getDate();
-    const todayDayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    const todayMonth = today.getMonth(); // 0 = January, 1 = February, ..., 11 = December
-    const lastDayOfMonth = new Date(
-      today.getFullYear(),
-      todayMonth + 1,
-      0
-    ).getDate();
-
-    return habits.filter((habit) => {
-      if (habit.frequency === "daily") {
-        return true;
-      }
-
-      if (habit.frequency === "weekly") {
-        const weeklyDays = habit.weekly_days.map(
-          (day) => convertDays[day] || day
-        );
-        return weeklyDays.includes(
-          today.toLocaleString("en-US", { weekday: "long" })
-        ); // Check if today is in the habit's weekly_days
-      }
-
-      if (habit.frequency === "monthly") {
-        const monthlyDates = habit.monthly_dates;
-        return (
-          monthlyDates.includes(todayDate) || // Check if today is in the habit's monthly_dates
-          (todayDate === lastDayOfMonth &&
-            monthlyDates.some((date) => date > lastDayOfMonth)) // Handle 29th, 30th, 31st
-        );
-      }
-
-      return false; // Exclude habits that don't match the frequency criteria
-    });
-  };
-
   try {
-    // Fetch habits from the database
-    const habits = await knex("habits").where({ user_id: userId });
+    const activeGoals = await knex("goals")
+      .where("user_id", userId)
+      .where("end_time", ">", Math.floor(new Date().getTime()))
+      .select("id");
 
-    // Filter habits for today
+    if (activeGoals.length === 0) {
+      return res.status(404).json({ message: "No active goals found." });
+    }
+
+    const habits = await knex("habits")
+      .whereIn("goal_id",activeGoals.map((goal) => goal.id))
+      .select("*");
+
+    const filterTodayHabits = (habits) => {
+      const today = new Date();
+      const todayDate = today.getDate();
+      const todayDayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const todayMonth = today.getMonth(); // 0 = January, 1 = February, ..., 11 = December
+      const lastDayOfMonth = new Date(
+        today.getFullYear(),
+        todayMonth + 1,
+        0
+      ).getDate();
+
+      return habits.filter((habit) => {
+        if (habit.frequency === "daily") {
+          return true;
+        }
+
+        if (habit.frequency === "weekly") {
+          const weeklyDays = habit.weekly_days.map(
+            (day) => convertDays[day] || day
+          );
+          return weeklyDays.includes(
+            today.toLocaleString("en-US", { weekday: "long" })
+          ); 
+        }
+
+        if (habit.frequency === "monthly") {
+          const monthlyDates = habit.monthly_dates;
+          return (
+            monthlyDates.includes(todayDate) || // Check if today is in the habit's monthly_dates
+            (todayDate === lastDayOfMonth &&
+              monthlyDates.some((date) => date > lastDayOfMonth)) // Handle 29th, 30th, 31st
+          );
+        }
+
+        return false; 
+      });
+    };
+
     const todayHabits = filterTodayHabits(habits);
 
     if (todayHabits.length > 0) {
