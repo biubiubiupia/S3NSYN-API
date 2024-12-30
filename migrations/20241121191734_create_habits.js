@@ -8,7 +8,7 @@ export const up = function (knex) {
     // table.increments("id").primary(); //for MySQL
     table.string("title").notNullable();
     table.text("note");
-    table.integer("reward_points");
+    // table.timestamp("start-time").defaultTo(knex.fn.now());
     table.integer("count").notNullable();
     table.enum("frequency", ["daily", "weekly", "monthly"]).notNullable();
     table.json("alert_times").notNullable();

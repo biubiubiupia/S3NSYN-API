@@ -11,7 +11,9 @@ export const up = function (knex) {
     table.string("title").notNullable();
     table.text("description");
     table.integer("points").notNullable();
-    table.bigint("start_time")
+    table.decimal("points_per_occurrence", 10, 2).defaultTo(0);
+    table.bigint("start_time");
+    table.bigint("end_time");
     table
       .integer("user_id")
       .unsigned()
@@ -36,5 +38,5 @@ export const up = function (knex) {
  * @returns { Promise<void> }
  */
 export const down = function (knex) {
-    return knex.schema.dropTable("rewards");
-  };
+  return knex.schema.dropTable("rewards");
+};

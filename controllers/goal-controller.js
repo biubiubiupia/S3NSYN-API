@@ -1,5 +1,6 @@
 import initKnex from "knex";
 import configuration from "../knexfile.js";
+import { allOccur, updatePoints } from "../utils/calculate-points.js";
 const knex = initKnex(configuration);
 
 const getGoals = async (req, res) => {
@@ -31,12 +32,9 @@ const addGoal = async (req, res) => {
     const { title, description, start_time, end_time } = req.body;
 
     if (!title || typeof title !== "string" || !start_time || !end_time) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Invalid input: title, start_time, and end_time are required",
-        });
+      return res.status(400).json({
+        message: "Invalid input: title, start_time, and end_time are required",
+      });
     }
 
     const userId = req.user.id;
@@ -69,26 +67,47 @@ const editGoal = async (req, res) => {
 
   const { title, description, start_time, end_time } = req.body;
 
-  if (!title || !description || !start_time || !end_time) {
+  if (!title || !start_time || !end_time) {
     return res.status(400).json({
-      message: "Please include goal title, description, start_time and end_time in request body.",
+      message:
+        "Please include goal title, start_time, and end_time in request body.",
     });
   }
 
   try {
-    const goalUpdated = await knex("goals")
-      .where({ id: goalId })
-      .update(req.body)
+    // Fetch the current goal to compare the `end_time`
+    const currentGoal = await knex("goals").where({ id: goalId }).first();
 
-    if (goalUpdated === 0) {
+    if (!currentGoal) {
       return res.status(404).json({
-        message: `Goal with ID ${id} not found`,
+        message: `Goal with ID ${goalId} not found.`,
       });
     }
 
-    const updatedGoal = await knex("goals").where({ id: goalId }).first();
+    // Check if `end_time` has been updated
+    const isEndTimeUpdated =
+      new Date(currentGoal.end_time).getTime() !== new Date(end_time).getTime();
 
-    res.status(200).json(updatedGoal);
+    // Update the goal
+    await knex("goals").where({ id: goalId }).update(req.body);
+
+    // Fetch the updated goal
+    const updatedGoal = { ...currentGoal, ...req.body }; // Assuming req.body contains updated fields
+    // Proceed with reward recalculation only if `end_time` has changed
+    if (isEndTimeUpdated) {
+      await knex("rewards").where({ goal_id: goalId }).update({ end_time: end_time });
+
+      const totalOccur = await allOccur(goalId, start_time, end_time);
+      await updatePoints(goalId, totalOccur);
+    }
+
+    res.status(200).json({
+      message: "Goal updated successfully.",
+      updatedGoal,
+      rewardUpdated: isEndTimeUpdated
+        ? "Points per occurrence recalculated"
+        : "No change to rewards",
+    });
   } catch (error) {
     console.error(`Error updating goal with ID ${goalId}:`, error);
     res.status(500).json({
@@ -96,7 +115,6 @@ const editGoal = async (req, res) => {
     });
   }
 };
-
 
 const deleteGoal = async (req, res) => {
   const { goalId } = req.params;

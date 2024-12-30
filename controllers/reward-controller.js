@@ -1,8 +1,6 @@
 import initKnex from "knex";
 import configuration from "../knexfile.js";
 const knex = initKnex(configuration);
-import jwt from "jsonwebtoken";
-import authenticate from "../middleware/authenticate.js";
 
 const setReward = async (req, res) => {
   const userId = req.user.id;
@@ -26,6 +24,7 @@ const setReward = async (req, res) => {
       description,
       points: 1000,
       start_time: goal.start_time,
+      end_time: goal.end_time,
       goal_id,
       user_id: userId,
     });
@@ -86,7 +85,7 @@ const editReward = async (req, res) => {
   try {
     const rewardUpdated = await knex("rewards")
       .where({ id: rewardId })
-      .update(req.body)
+      .update(req.body);
 
     if (rewardUpdated === 0) {
       return res.status(404).json({
@@ -105,4 +104,54 @@ const editReward = async (req, res) => {
   }
 };
 
-export { setReward, getOneReward, getAllRewards, editReward };
+const changePoints = async (req, res) => {
+  const { habitId } = req.params;
+  const { action } = req.body;
+
+  if (!action) {
+    return res.status(400).json({
+      message: "Please provide both habitId and action ('add' or 'subtract').",
+    });
+  }
+
+  const habit = await knex("habits").where({ id: habitId }).first();
+
+  const goalId = habit.goal_id;
+
+  const reward = await knex("rewards").where({ goal_id: goalId }).first();
+
+  if (!habit) {
+    return res.status(404).json({ message: "Habit not found." });
+  }
+  if (!reward) {
+    return res
+      .status(404)
+      .json({ message: "Reward not found for the associated goal." });
+  }
+
+  let pointsChange = reward.points_per_occurrence;
+  if (action === "subtract") {
+    pointsChange = -pointsChange;
+  } else if (action !== "add") {
+    return res.status(400).json({
+      message: "Invalid action. Use 'add' or 'subtract'.",
+    });
+  }
+
+  try {
+    await knex("rewards")
+      .where({ goal_id: goalId })
+      .increment("points", pointsChange);
+
+    res.status(200).json({
+      message: `Reward points updated successfully. ${
+        action === "add" ? "Added" : "Subtracted"
+      } ${pointsChange} points.`,
+    });
+  } catch (error) {
+    console.error("Error updating reward points:", error);
+    res.status(500).json({ message: "Error updating reward points" });
+  }
+};
+
+export { setReward, getOneReward, getAllRewards, editReward, changePoints };
