@@ -67,8 +67,6 @@ const editGoal = async (req, res) => {
 
   const { title, description, start_time, end_time } = req.body;
 
-  console.log(req.body);
-
   if (!title || !start_time || !end_time) {
     return res.status(400).json({
       message:

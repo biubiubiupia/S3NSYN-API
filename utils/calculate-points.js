@@ -37,7 +37,7 @@ const updatePoints = async (goal_id, totalOccur) => {
   const reward = await knex("rewards").where("goal_id", goal_id).first();
   if (!reward) throw new Error("Reward not found");
 
-  const pointsPerOccur = totalOccur ? reward.points / (totalOccur * 0.75) : 0;
+  const pointsPerOccur = totalOccur ? reward.points / totalOccur : 0;
 
   await knex("rewards")
     .where("goal_id", goal_id)
