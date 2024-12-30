@@ -4,7 +4,8 @@
  */
 export const up = function (knex) {
   return knex.schema.createTable("goals", (table) => {
-    table.increments("id").primary();
+    table.serial("id").primary();
+    // table.increments("id").primary(); for MySQL
     table.string("title").notNullable();
     table.text("description");
     table.bigint("start_time");

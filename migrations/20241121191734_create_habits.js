@@ -4,13 +4,13 @@
  */
 export const up = function (knex) {
   return knex.schema.createTable("habits", (table) => {
-    table.increments("id").primary();
+    table.serial("id").primary(); //for PostgreSQL
+    // table.increments("id").primary(); //for MySQL
     table.string("title").notNullable();
     table.text("note");
     table.integer("reward_points");
-    table.timestamp("start-time").defaultTo(knex.fn.now());
     table.integer("count").notNullable();
-    table.string("frequency", ["daily", "weekly", "monthly"]).notNullable();
+    table.enum("frequency", ["daily", "weekly", "monthly"]).notNullable();
     table.json("alert_times").notNullable();
     table.json("weekly_days");
     table.json("monthly_dates");

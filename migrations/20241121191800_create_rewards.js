@@ -4,7 +4,10 @@
  */
 export const up = function (knex) {
   return knex.schema.createTable("rewards", (table) => {
-    table.increments("id").primary();
+    // for MySQL, uncomment the line below: 
+    // table.increments("id").primary(); 
+    // for PostgreSQL
+    table.serial("id").primary(); 
     table.string("title").notNullable();
     table.text("description");
     table.integer("points").notNullable();
