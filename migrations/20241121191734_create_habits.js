@@ -3,12 +3,10 @@
  * @returns { Promise<void> }
  */
 export const up = function (knex) {
-  return knex.schema.createTable("habits", (table) => {
-    table.serial("id").primary(); //for PostgreSQL
-    // table.increments("id").primary(); //for MySQL
+  return knex.schema.withSchema("s3nsyn").createTable("habits", (table) => {
+    table.increments("id").primary();
     table.string("title").notNullable();
     table.text("note");
-    // table.timestamp("start-time").defaultTo(knex.fn.now());
     table.integer("count").notNullable();
     table.enum("frequency", ["daily", "weekly", "monthly"]).notNullable();
     table.json("alert_times").notNullable();
@@ -40,5 +38,5 @@ export const up = function (knex) {
  * @returns { Promise<void> }
  */
 export const down = function (knex) {
-  return knex.schema.dropTable("habits");
+  return knex.schema.withSchema("s3nsyn").dropTable("habits");
 };

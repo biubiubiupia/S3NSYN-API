@@ -3,9 +3,8 @@
  * @returns { Promise<void> }
  */
 export const up = function (knex) {
-  return knex.schema.createTable("goals", (table) => {
-    table.serial("id").primary();
-    // table.increments("id").primary(); for MySQL
+  return knex.schema.withSchema("s3nsyn").createTable("goals", (table) => {
+    table.increments("id").primary();
     table.string("title").notNullable();
     table.text("description");
     table.bigint("start_time");
@@ -26,5 +25,5 @@ export const up = function (knex) {
  * @returns { Promise<void> }
  */
 export const down = function (knex) {
-  return knex.schema.dropTable("goals");
+  return knex.schema.withSchema("s3nsyn").dropTable("goals");
 };

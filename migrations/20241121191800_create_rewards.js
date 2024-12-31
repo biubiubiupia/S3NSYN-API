@@ -3,11 +3,8 @@
  * @returns { Promise<void> }
  */
 export const up = function (knex) {
-  return knex.schema.createTable("rewards", (table) => {
-    // for MySQL, uncomment the line below: 
-    // table.increments("id").primary(); 
-    // for PostgreSQL
-    table.serial("id").primary(); 
+  return knex.schema.withSchema("s3nsyn").createTable("rewards", (table) => {
+    table.increments("id").primary();
     table.string("title").notNullable();
     table.text("description");
     table.integer("points").notNullable();
@@ -38,5 +35,5 @@ export const up = function (knex) {
  * @returns { Promise<void> }
  */
 export const down = function (knex) {
-  return knex.schema.dropTable("rewards");
+  return knex.schema.withSchema("s3nsyn").dropTable("rewards");
 };
