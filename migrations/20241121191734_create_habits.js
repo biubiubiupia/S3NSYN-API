@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 export const up = function (knex) {
-  return knex.schema.withSchema("s3nsyn").createTable("habits", (table) => {
+  return knex.schema.createTable("habits", (table) => {
     table.increments("id").primary();
     table.string("title").notNullable();
     table.text("note");
@@ -38,5 +38,5 @@ export const up = function (knex) {
  * @returns { Promise<void> }
  */
 export const down = function (knex) {
-  return knex.schema.withSchema("s3nsyn").dropTable("habits");
+  return knex.schema.dropTable("habits");
 };
